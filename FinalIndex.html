@@ -57,7 +57,7 @@
       const input = document.getElementById(\"password\").value.trim();
       const validPassword = \"obscure2025\";
       if (input === validPassword) {
-        window.location.replace(\"/products.html\");
+        window.location.href = \"products.html\";
       } else {
         document.getElementById(\"error\").innerText = \"Incorrect password. Try again.\";
       }
