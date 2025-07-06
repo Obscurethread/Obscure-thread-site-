@@ -1,0 +1,211 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Obscure Thread – Product Drop</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --fg: #ffffff;
+      --accent: crimson;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0 20px 60px;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Courier New", monospace;
+    }
+    h1 {
+      text-align: center;
+      margin: 40px 0 10px;
+      color: var(--accent);
+      text-shadow: 0 0 8px var(--accent);
+      letter-spacing: 2px;
+    }
+    header {
+      display: flex;
+      justify-content: flex-end;
+      padding: 10px 0;
+    }
+    #cart-link {
+      color: var(--fg);
+      text-decoration: none;
+      position: relative;
+      font-weight: bold;
+    }
+    #cart-count {
+      background: var(--accent);
+      color: #000;
+      border-radius: 50%;
+      padding: 0 6px;
+      font-size: 0.8em;
+      position: absolute;
+      top: -8px;
+      right: -12px;
+    }
+    .product-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .product-card {
+      background: #111;
+      border: 1px solid var(--accent);
+      width: 300px;
+      border-radius: 10px;
+      overflow: hidden;
+      padding: 18px;
+      text-align: center;
+    }
+    .product-card img {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    .product-card h2 { color: var(--accent); margin: 14px 0 6px; }
+    .price { font-weight: bold; margin: 10px 0; }
+    select { width: 100%; padding: 8px; background: var(--bg); color: var(--fg); border: 1px solid var(--accent); border-radius: 6px; }
+    button.add-cart {
+      margin-top: 14px;
+      padding: 10px 20px;
+      background: var(--accent);
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+    }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
+    .modal-content { background: #111; padding: 20px; width: 90%; max-width: 400px; border: 1px solid var(--accent); border-radius: 10px; }
+    .modal-content h2 { margin-top:0; color: var(--accent); }
+    .cart-item { display: flex; justify-content: space-between; margin: 10px 0; }
+    #checkout { width: 100%; margin-top: 14px; padding: 10px; background: var(--accent); color:#000; border:none; border-radius:30px; font-weight:bold; cursor:pointer; }
+    #close-cart { margin-top: 8px; background:none; border:none; color: var(--accent); cursor:pointer; text-decoration: underline; }
+  </style>
+</head>
+<body>  <header>
+    <a href="#" id="cart-link">Cart <span id="cart-count">0</span></a>
+  </header>  <h1>OBSCURE THREAD – JULY DROP</h1>  <div class="product-container">
+    <div class="product-card" data-id="1" data-name="Sigil Tank" data-price="599">
+      <img src="images/sigil_tank.jpg" alt="Sigil Tank" />
+      <h2>SIGIL TANK</h2>
+      <p>Ribbed tank printed with occult scripture and demonic symmetry.</p>
+      <div class="price">₹599</div>
+      <select class="size-select">
+        <option value="S">S</option>
+        <option value="M">M</option>
+        <option value="L">L</option>
+      </select>
+      <button class="add-cart">Add to cart</button>
+    </div><div class="product-card" data-id="2" data-name="Trinity Skull Tank" data-price="599">
+  <img src="images/trinity_skull_tank.jpg" alt="Trinity Skull Tank" />
+  <h2>TRINITY SKULL TANK</h2>
+  <p>Grungy washed grey tank with dripping skulls and lunar sigils.</p>
+  <div class="price">₹599</div>
+  <select class="size-select">
+    <option value="M">M</option>
+    <option value="L">L</option>
+    <option value="XL">XL</option>
+  </select>
+  <button class="add-cart">Add to cart</button>
+</div>
+
+  </div>  <div class="modal" id="cart-modal">
+    <div class="modal-content">
+      <h2>Your Cart</h2>
+      <div id="cart-items"></div>
+      <div id="cart-total" style="margin-top:10px;font-weight:bold;"></div>
+      <button id="checkout">Checkout via WhatsApp</button>
+      <button id="close-cart">Close</button>
+    </div>
+  </div><script>
+const products = [
+  { id: 1, name: "Sigil Tank", price: 599, stock: 15 },
+  { id: 2, name: "Trinity Skull Tank", price: 599, stock: 15 }
+];
+
+let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+function updateCartCount() {
+  const count = cart.reduce((sum, item) => sum + item.qty, 0);
+  document.getElementById("cart-count").innerText = count;
+}
+updateCartCount();
+
+document.querySelectorAll(".add-cart").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const card = btn.closest(".product-card");
+    const id = parseInt(card.dataset.id);
+    const size = card.querySelector(".size-select").value;
+    const product = products.find(p => p.id === id);
+
+    const index = cart.findIndex(i => i.id === id && i.size === size);
+    const currentQty = index > -1 ? cart[index].qty : 0;
+    const totalQty = cart.filter(i => i.id === id).reduce((sum, i) => sum + i.qty, 0);
+
+    if (totalQty >= product.stock) {
+      alert("Out of stock: Only 15 pieces available per product.");
+      return;
+    }
+
+    if (index > -1) {
+      cart[index].qty += 1;
+    } else {
+      cart.push({ ...product, size, qty: 1 });
+    }
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartCount();
+    alert("Added to cart");
+  });
+});
+
+const cartModal = document.getElementById("cart-modal");
+const cartItemsEl = document.getElementById("cart-items");
+const cartTotalEl = document.getElementById("cart-total");
+
+function renderCart() {
+  cartItemsEl.innerHTML = "";
+  let total = 0;
+  if (cart.length === 0) {
+    cartItemsEl.innerHTML = "<p>Your cart is empty.</p>";
+  } else {
+    cart.forEach(item => {
+      const line = document.createElement("div");
+      line.className = "cart-item";
+      line.innerHTML = `${item.name} (${item.size}) x${item.qty} <span>₹${item.price * item.qty}</span>`;
+      cartItemsEl.appendChild(line);
+      total += item.price * item.qty;
+    });
+  }
+  cartTotalEl.innerText = `Total: ₹${total}`;
+}
+
+document.getElementById("cart-link").addEventListener("click", e => {
+  e.preventDefault();
+  renderCart();
+  cartModal.style.display = "flex";
+});
+
+document.getElementById("close-cart").addEventListener("click", () => {
+  cartModal.style.display = "none";
+});
+
+document.getElementById("checkout").addEventListener("click", () => {
+  if (cart.length === 0) return alert("Your cart is empty");
+  let msg = "OBSCURE THREAD ORDER:%0A";
+  cart.forEach(item => {
+    msg += `- ${item.name} (${item.size}) x${item.qty} = ₹${item.price * item.qty}%0A`;
+  });
+  const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+  msg += `%0ATotal: ₹${total}`;
+  const link = `https://wa.me/917892131458?text=${msg}`;
+  window.open(link, "_blank");
+});
+</script></body>
+</html>
